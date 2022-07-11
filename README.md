@@ -1,2 +1,4 @@
 # flosic_util
-Some utility code for flosic calculation
+Some utility codes for flosic calculation.
+
+Required python libraries: ASE, Numpy
