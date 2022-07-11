@@ -5,6 +5,11 @@ import os
 import getopt
 import sys
 
+''' fix 1s FOD for all elements other than H atom. This script finds the closest FOD to each atom and change its coordinates to the atom's.
+Usage: python fix1s.py [-i]
+-i option for in place modification
+'''
+
 fp = open('FRMORB', 'r')
 lines = fp.readlines()
 for i in range(len(lines)):
@@ -49,8 +54,6 @@ def fix(fods):
         for j in range(len(fods)):
             tmp = get_dis(i, fods[j])
             if tmp < dis:
-                #                print(i)
-                #                print(fods[j])
                 index = j
                 dis = tmp
         if dis > 0.0 and dis < 0.001:

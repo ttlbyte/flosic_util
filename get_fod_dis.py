@@ -2,6 +2,9 @@
 # encoding: utf-8
 import numpy as np
 
+'''
+find the minimal distances between FODs for both spins to detect any ill-defined FOD.
+'''
 fp = open('FRMORB', 'r')
 lines = fp.readlines()
 for i in range(len(lines)):
