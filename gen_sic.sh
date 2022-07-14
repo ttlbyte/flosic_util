@@ -4,56 +4,64 @@ EXEC=~/work/code/flosic/PublicRelease_2020/nrlmol_exe_1e4
 unset -v host
 unset -v port
 unset -v user
-###    "Usage: ./gen_sic.sh -q queue -n nodes [-p ppn] [-a accuracy] [-r]" default -q normal -n 1 -a 5e4
+###    "Usage: ./gen_sic.sh -q queue -n nodes [-p ppn] [-a accuracy] [-r]" default -q normal -n 1 -a 5
 
 queue=normal
 nodes=1
 accu=5
 runflag=false
-while getopts "q:n:p:a:rh" opt; do
+while getopts "q:n:p:a:w:rh" opt; do
     case $opt in
     q) queue=$OPTARG ;;
     n) nodes=$OPTARG ;;
     p) ppn1=$OPTARG ;;
-    a) accu=$OPTARG ;;
-    r) runflag=true ;; 
-    h) echo "Usage: ./gen_sic.sh -q queue -n nodes [-p ppn] [-a accuracy] [-r]" &&  exit 1 ;;
+    a) accu=$OPTARG ;;                        # set FOD accuracy
+    w) wall1=$OPTARG ;;                       # set walltime
+    r) runflag=true ;;                        # submit the job
+    h) echo "Usage: ./gen_sic.sh -q queue [-n nodes] [-p ppn] [-w walltime] [-a accuracy] [-r]" &&  exit 1 ;;
 esac
 done
-#### Set default ppn for different queues and enforce # of nodes limits for large, big and huge
+#### Set default ppn for different queues and enforce # of nodes limits for large, big and huge, change ppn and walltime to upper limit
 case $queue in
     normal )
-        WALL="48:00:00"
+        WALL=48
         ppn=28
         ;;
     medium )
-        WALL="120:00:00"
+        WALL=120
         ppn=16
         ;;
     large )
-        WALL="120:00:00"
+        WALL=120
         if [[ nodes -gt 2 ]];then
             nodes=2
         fi
         ppn=16
         ;;
     big )
-        WALL="96:00:00"
+        WALL=96
         nodes=1
         ppn=32
         ;;
     huge )
-        WALL="96:00:00"
+        WALL=96
         nodes=1
         ppn=16
         ;;
     * )
-       echo "Usage: ./gen_sic.sh [-q queue] [-n nodes] [-p ppn] [-a accuracy]" && exit -1 ;;
+       echo "Usage: ./gen_sic.sh [-q queue] [-n nodes] [-p ppn] [-w walltime] [-a accuracy] [-r]" && exit -1 ;;
 esac
+
+### change ppn and walltime only if they are allowed for the queue
 if [[ $ppn1 -ge 1 && $ppn1 -lt $ppn ]]; then
     ppn=$ppn1
 fi
 
+if [[ $wall1 -ge 1 && $wall1 -lt $WALL ]];then
+    WALL=$wall1
+fi
+
+### only two of different accuracy are compiled
 case $accu in
     1 )
         EXEC=~/work/code/flosic/PublicRelease_2020/nrlmol_exe_1e4
@@ -68,7 +76,7 @@ esac
 
 cat > run_flosic.sh <<EOF
 #!/bin/sh
-#PBS -l walltime=$WALL
+#PBS -l walltime=$WALL:00:00
 #PBS -N `basename $PWD`_sic
 #PBS -q $queue
 #PBS -l nodes=$nodes:ppn=$ppn
